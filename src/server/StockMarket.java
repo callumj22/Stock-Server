@@ -19,6 +19,15 @@ public class StockMarket implements Runnable{
     //Trades stock between traders c1 and c2, returns true if trade was successul.
     //C1 = current owner, C2 = buyer
     public boolean trade(Client c1, Client c2, Stock stockTrade){
+        System.out.println("in trade ");
+
+        /* UNCOMMENT FOR TESTING IF A TRADER DISCONNECTS MID-TRADE
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+           */
 
         //Check if the owner is also the buyer
         if (stockTrade.getOwner() == c2){
@@ -30,7 +39,16 @@ public class StockMarket implements Runnable{
             stockTrade.setOwner(c2);
             if (!(c1.ownedStock.contains(stockTrade))) {
                 if (c2.ownedStock.contains(stockTrade)) {
-                    return true;
+                    if ((c1.isConnected()) && (c2.isConnected())){ //Check if traders are still connected before finalisation of trade.
+                        return true;
+                    }else{
+                        //Revert trade to previous owner
+                        c2.ownedStock.remove(stockTrade);
+                        c1.ownedStock.add(stockTrade);
+                        stockTrade.setOwner(c1);
+                        return false;
+                    }
+
                 }
             }
         }

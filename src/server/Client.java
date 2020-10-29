@@ -80,6 +80,14 @@ public class Client implements Runnable{
 
     }
 
+    public boolean isConnected(){
+        if (socket.isClosed()){
+            return false;
+        }else{
+            return true;
+        }
+    }
+
     public void sendMessage(String msg){
         writer.println(msg);
     }
@@ -113,9 +121,14 @@ public class Client implements Runnable{
     public void quit(){
         System.out.println("User: " + this.username + " quitting");
         Main.broadcast("User: " + this.username + " disconnected");
+        Main.clients.remove(this);
         try {
-            resetStock();
-            Main.clients.remove(this);
+            System.out.println("reseeting stock in quit function");
+            for (int i = 0; i < ownedStock.size(); i++){
+                Main.resetStock(this);
+            }
+
+
             socket.close();
         } catch (IOException e) {
             System.out.println("Error closing socket");
@@ -171,17 +184,38 @@ public class Client implements Runnable{
 
         } catch (IOException e) {
             System.out.println("Error");
-            resetStock();
+
+            Main.resetStock(this);
+
+            this.ownedStock.clear();
             System.exit(1);
         }
     }
 
 
+    /*
     public void resetStock(){
         if (ownedStock.size() > 0){
             for(int i = 0; i < ownedStock.size(); i++){
-                ownedStock.get(i).setOwner(null); //As user disconnects, if they are the owner of the stock it will set it to no owner.
+                if (Main.clients.size() > 0){
+                    System.out.println("setting owner");
+                    Client newOwner = Main.clients.get(0);
+                    Stock stock = ownedStock.get(i);
+                    if(stock.setOwner(newOwner)){//As user disconnects, if they are the owner of the stock it will set to the first client in the connection array
+                        System.out.println("New owner success");
+                        System.out.println(stock.getOwner().username);
+                    }else{
+                        System.out.println("new owner failure.");
+                    }
+
+                    System.out.println("here");
+                }else{
+                    ownedStock.get(i).setOwner(null); //if there are no users connected, resets the stock ownership to null
+                }
+
             }
         }
-    }
+    }*/
+
+
 }

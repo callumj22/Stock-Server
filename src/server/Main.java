@@ -10,8 +10,8 @@ import java.util.ArrayList;
 public class Main {
 
     private static ServerSocket serverSocket;
-    public static ArrayList<Client> clients;
-    public static StockMarket market;
+    public static ArrayList<Client> clients; //Connected clients
+    public static StockMarket market; //market class
 
     public static void main(String[] args) {
 
@@ -26,6 +26,35 @@ public class Main {
 
 
 
+    public static void resetStock(Client oldOwner){
+
+        if (clients.size()>0) { //if there are other clients connected
+            Client newOwner = clients.get(0); //get assigns stock to the user in position 1
+
+            //Functionality proofed to loop through user's owned stock in a multi-stock market
+            for (int i = 0; i < clients.size(); i++){
+                System.out.println("Client: " + clients.get(i).getUsername());
+            }
+
+            for (int i = 0; i < oldOwner.ownedStock.size(); i++){
+
+                //Reassign the stock to the new owner, and unassign from the old owner.
+                Stock stock = oldOwner.ownedStock.get(i);
+                oldOwner.ownedStock.remove(stock);
+                newOwner.ownedStock.add(stock);
+                stock.setOwner(newOwner);
+            }
+
+        }else{
+            //If there are no clients connected, the stock owner is set to null.
+            for (int i = 0; i < oldOwner.ownedStock.size(); i++){
+                Stock stock = oldOwner.ownedStock.get(i);
+                oldOwner.ownedStock.remove(stock);
+                stock.setOwner(null);
+            }
+        }
+
+    }
 
 
     public static void startServer() throws IOException {
