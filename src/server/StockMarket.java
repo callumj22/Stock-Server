@@ -17,6 +17,7 @@ public class StockMarket implements Runnable{
 
 
     //Trades stock between traders c1 and c2, returns true if trade was successul.
+    //C1 = current owner, C2 = buyer
     public boolean trade(Client c1, Client c2, Stock stockTrade){
         c1.ownedStock.remove(stockTrade);
         c2.ownedStock.add(stockTrade);

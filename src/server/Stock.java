@@ -11,6 +11,9 @@ public class Stock {
         this.stockID = ID;
     }
 
+    public Client getOwner(){
+        return this.owner;
+    }
 
     public boolean hasOwner(){
         if (this.owner == null){

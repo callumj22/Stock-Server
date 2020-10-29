@@ -11,6 +11,7 @@ public class Main {
 
     private static ServerSocket serverSocket;
     public static ArrayList<Client> clients;
+    public static StockMarket market;
 
     public static void main(String[] args) {
 
@@ -38,9 +39,12 @@ public class Main {
 
             while (true) {
                 Socket socket = serverSocket.accept();
-                Client client = new Client(socket, clients.size()+1);
+                Client client = new Client(socket, "John");
 
                 clients.add(client);
+
+                System.out.println("Client: " + client.getUsername());
+                broadcast("User: " + client.getUsername() + " has connected to the server.");
 
                 //first client to connect gets stock
                 if (clients.size() == 1){
@@ -53,6 +57,14 @@ public class Main {
 
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+
+    //Broadcast to all connections
+    public static void broadcast(String message){
+        for (int i = 0; i < clients.size(); i++){
+            clients.get(i).sendMessage(message);
         }
     }
 }
