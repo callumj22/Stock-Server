@@ -65,6 +65,7 @@ public class Client implements Runnable{
                 System.out.println("buyer: " + this.getUsername());
                 System.out.println("Stock: " + stockToBuy.name);
                 System.out.println("Market: " + Main.market);
+
                 if(Main.market.trade(owner, this, stockToBuy)){
                     System.out.println("Trade successful");
                 }else{

@@ -34,8 +34,10 @@ public class Main {
             serverSocket = new ServerSocket(8888);
             System.out.println("Server up and waiting for connections...");
 
+            market = new StockMarket();
+            Thread marketThread = new Thread(market);
             //Assigns stock market to a thread
-            new Thread(new StockMarket()).start();
+            //new Thread(new StockMarket()).start();
 
             while (true) {
                 Socket socket = serverSocket.accept();
