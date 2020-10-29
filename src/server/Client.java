@@ -60,15 +60,12 @@ public class Client implements Runnable{
         if (stockToBuy != null){
             if (stockToBuy.hasOwner()){
                 Client owner = stockToBuy.getOwner();
-                System.out.println("trade");
-                System.out.println("owner: " + owner.getUsername());
-                System.out.println("buyer: " + this.getUsername());
-                System.out.println("Stock: " + stockToBuy.name);
-                System.out.println("Market: " + Main.market);
 
                 if(Main.market.trade(owner, this, stockToBuy)){
                     System.out.println("Trade successful");
+                    Main.broadcast("Trade successful, owner of stock is: " + this.getUsername());
                 }else{
+                    sendMessage("Trade unsuccessful");
                     System.out.println("Trade unsuccessful");
                 }
                 //TODO trade
@@ -101,12 +98,25 @@ public class Client implements Runnable{
         //}
     }
 
+    //Could be modified to use a stock ID in a multi-stock market by taking stock id through arguement
+    public void status(){
+        Client stockOwner = Main.market.getStock(1).getOwner();
+        if (stockOwner != null){
+            writer.println("Stock owned by: " + stockOwner.getUsername());
+        }else{
+            writer.println("Stock not owned.");
+        }
+
+
+    }
+
     public void quit(){
         System.out.println("User: " + this.username + " quitting");
-        Main.broadcast("User: " + this.username + " left");
+        Main.broadcast("User: " + this.username + " disconnected");
         try {
-            socket.close();
+            resetStock();
             Main.clients.remove(this);
+            socket.close();
         } catch (IOException e) {
             System.out.println("Error closing socket");
         }
@@ -133,12 +143,13 @@ public class Client implements Runnable{
                                     System.out.println("sell found");
                                     break;
                                 case "buy":
-                                    System.out.println("buy found");
                                     buyStock();
-                                    System.out.println("fff");
                                     break;
                                 case "balance":
                                     balance();
+                                    break;
+                                case "status":
+                                    status();
                                     break;
                                 case "quit":
                                     quit();
@@ -148,7 +159,7 @@ public class Client implements Runnable{
                         running = false;
 
                     } catch (IOException e) {
-                        System.out.println("User disconnected");
+                        quit();
                         running = false;
                     }
 
@@ -160,7 +171,17 @@ public class Client implements Runnable{
 
         } catch (IOException e) {
             System.out.println("Error");
+            resetStock();
             System.exit(1);
+        }
+    }
+
+
+    public void resetStock(){
+        if (ownedStock.size() > 0){
+            for(int i = 0; i < ownedStock.size(); i++){
+                ownedStock.get(i).setOwner(null); //As user disconnects, if they are the owner of the stock it will set it to no owner.
+            }
         }
     }
 }

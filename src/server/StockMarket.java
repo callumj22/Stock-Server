@@ -27,7 +27,7 @@ public class StockMarket implements Runnable{
         }else {
             c1.ownedStock.remove(stockTrade);
             c2.ownedStock.add(stockTrade);
-
+            stockTrade.setOwner(c2);
             if (!(c1.ownedStock.contains(stockTrade))) {
                 if (c2.ownedStock.contains(stockTrade)) {
                     return true;
