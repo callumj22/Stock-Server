@@ -75,7 +75,7 @@ public class Main {
                 clients.add(client);
 
                 System.out.println("Client: " + client.getUsername());
-                broadcast("User: " + client.getUsername() + " has connected to the server.");
+                broadcast("User: " + client.getUsername() + " has connected to the server. ID: " + client.getID());
 
                 //first client to connect gets stock
                 if (clients.size() == 1){
@@ -97,5 +97,15 @@ public class Main {
         for (int i = 0; i < clients.size(); i++){
             clients.get(i).sendMessage(message);
         }
+    }
+
+    //Returns client object from connected clients using ID int, else returns null
+    public static Client getClient(int ID){
+        for (int i = 0; i < clients.size(); i++){
+            if (clients.get(i).getID() == ID){
+                return clients.get(i);
+            }
+        }
+        return null; //No client found
     }
 }

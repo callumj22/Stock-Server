@@ -7,12 +7,12 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.UUID;
+
 
 public class Client implements Runnable{
 
     private Socket socket;
-    private UUID ID;
+    private int ID;
     private String username;
     private PrintWriter writer;
     private BufferedReader in;
@@ -30,7 +30,7 @@ public class Client implements Runnable{
         this.username = setUsername();
         this.ownedStock = new ArrayList<Stock>();
         this.socket = socket;
-        this.ID = UUID.randomUUID();
+        this.ID = generateID();
     }
 
     public String setUsername(){
@@ -47,7 +47,24 @@ public class Client implements Runnable{
         return this.username;
     }
 
-    public UUID getID(){
+    //Generates user ID. First tries to make the user ID equal to the size of the clients array. If the Id has been taken, it increments by 1.
+    //Alternative to have an index variable which stores the last assigned ID, but this may become unstable at higher numbers (in a theoretical setting with more connections)
+    public int generateID(){
+        int firstID = Main.clients.size();
+        boolean idValid = false;
+        while (!idValid){
+            for (int i = 0; i < Main.clients.size(); i++){
+                if (Main.clients.get(i).getID() == firstID){
+                    System.out.println("id not valid");
+                    firstID += 1;
+                }
+            }
+            idValid = true;
+        }
+        return firstID;
+    }
+
+    public int getID(){
         return this.ID;
     }
 
@@ -93,17 +110,40 @@ public class Client implements Runnable{
     }
 
     private void sellStock(){
-        //TODO sell stock
-        System.out.println("Sell stock");
+        int recipientID = 0;
+        
+        try {
+            recipientID = Integer.valueOf(in.readLine());
+        } catch (IOException e) {
+            sendMessage("Please provide a valid user ID");
+            e.printStackTrace();
+        }
+
+        //Check user owns the stock
+        if (ownedStock.size() != 0 ){
+            Client recipient = Main.getClient(recipientID);
+
+            if (recipient != null) {
+                if (Main.market.trade(this, recipient, this.ownedStock.get(0)) == true) { //In a single stock market will always be index 0
+                    sendMessage("Trade successful");
+                }else{
+                    sendMessage("Trade unsuccessful");
+                }
+            }
+            else{
+                sendMessage("Invalid user ID. Type 'connections' for a list of users connected");
+
+            }
+        }else{
+            writer.println("You do not own the stock! Type 'status' to see who owns the stock");
+        }
     }
 
     private void balance(){
         //TODO show balance
-        writer.println("Trader balance for trader ID: " + ID);
-        writer.println("Stock size: " + ownedStock.size());
-        //for (Stock Stock : ownedStock){
-            //writer.println("Stock: " + Stock.name);
-        //}
+        String stockMessage = "Stock: ";
+        for (int i = 0; i < ownedStock.size(); i++){stockMessage+= ownedStock.get(i).name + " ";}
+        sendMessage(stockMessage);
     }
 
     //Could be modified to use a stock ID in a multi-stock market by taking stock id through arguement
@@ -116,6 +156,15 @@ public class Client implements Runnable{
         }
 
 
+    }
+
+    public void connections(){
+        System.out.println("here");
+        String connections = "";
+        for (int i = 0; i < Main.clients.size(); i++){
+            connections += (Main.clients.get(i).username + " ID: " + Main.clients.get(i).getID() + "\n");
+        }
+        sendMessage(connections);
     }
 
     public void quit(){
@@ -153,7 +202,8 @@ public class Client implements Runnable{
                             System.out.println(inputLine);
                             switch (inputLine){
                                 case "sell":
-                                    System.out.println("sell found");
+                                    System.out.println("sell found for user: " + this.getUsername());
+                                    sellStock();
                                     break;
                                 case "buy":
                                     buyStock();
@@ -163,6 +213,9 @@ public class Client implements Runnable{
                                     break;
                                 case "status":
                                     status();
+                                    break;
+                                case "connections":
+                                    connections();
                                     break;
                                 case "quit":
                                     quit();
